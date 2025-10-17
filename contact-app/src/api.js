@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export default axios.create({
-  baseURL: "http://localhost:2030/contact-backend"
+  baseURL: "http://localhost:2030/contact-backend/api.contacts"
 });
