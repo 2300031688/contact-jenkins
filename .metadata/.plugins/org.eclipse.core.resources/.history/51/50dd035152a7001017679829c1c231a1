@@ -1,0 +1,5 @@
+package com.example.contactapp.repository;
+
+public class ContactRepository {
+
+}

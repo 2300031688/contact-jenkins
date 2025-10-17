@@ -1,0 +1,77 @@
+package com.example.contactapp.controller;
+
+import com.example.contactapp.model.Contact;
+import com.example.contactapp.service.ContactService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/contacts")
+@CrossOrigin(origins = "*") // allow React frontend
+public class ContactController {
+
+    private final ContactService service;
+
+    public ContactController(ContactService service) {
+        this.service = service;
+    }
+
+
+    // ✅ Get limited contacts (first 5)
+    @GetMapping
+    public List<Contact> getLimitedContacts() {
+        return service.findAll().stream().limit(5).toList();
+    }
+    @GetMapping("/")
+    public String Message() {
+    	return "have a greate conversation😊🎉";
+    }
+
+    // ✅ Get all contacts
+    @GetMapping("/all")
+    public List<Contact> getAllContacts() {
+        return service.findAll();
+    }
+
+    // ✅ Get contact by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Contact> getById(@PathVariable Long id) {
+        return service.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ Add contact
+    @PostMapping("/add")
+    public ResponseEntity<Contact> create(@Valid @RequestBody Contact contact) {
+        Contact saved = service.save(contact);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    }
+
+    // ✅ Update contact
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Contact> update(@PathVariable Long id, @Valid @RequestBody Contact contact) {
+        return service.findById(id)
+                .map(existing -> {
+                    existing.setName(contact.getName());
+                    existing.setEmail(contact.getEmail());
+                    existing.setPhone(contact.getPhone());
+                    Contact updated = service.save(existing);
+                    return ResponseEntity.ok(updated);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // ✅ Delete contact
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        if (service.findById(id).isPresent()) {
+            service.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+}

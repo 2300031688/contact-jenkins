@@ -1,0 +1,43 @@
+package com.example.contactapp.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import com.example.contactapp.model.Contact;
+import com.example.contactapp.repository.ContactRepository;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/contacts")
+@CrossOrigin(origins = "http://localhost:5173") // for React Vite
+public class ContactController {
+
+    @Autowired
+    private ContactRepository repo;
+
+    @GetMapping
+    public List<Contact> getAllContacts() {
+        return repo.findAll();
+    }
+
+    @PostMapping
+    public Contact createContact(@RequestBody Contact contact) {
+        return repo.save(contact);
+    }
+
+    @PutMapping("/{id}")
+    public Contact updateContact(@PathVariable Long id, @RequestBody Contact updated) {
+        return repo.findById(id)
+                .map(contact -> {
+                    contact.setName(updated.getName());
+                    contact.setEmail(updated.getEmail());
+                    contact.setPhone(updated.getPhone());
+                    return repo.save(contact);
+                })
+                .orElseThrow(() -> new RuntimeException("Contact not found"));
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteContact(@PathVariable Long id) {
+        repo.deleteById(id);
+    }
+}
